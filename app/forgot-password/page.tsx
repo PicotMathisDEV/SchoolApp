@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
           <div className="text-sm ">
             Email de réinitialisation du mot de passe envoyé
           </div>,
-          { duration: 6000 }
+          { duration: 6000 },
         );
       }
     } catch (error) {
