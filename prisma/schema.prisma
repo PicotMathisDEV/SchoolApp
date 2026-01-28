@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String    @id @default(cuid())
   role          String?   @default("user")
   banned        Boolean?
   banReason     String?
@@ -27,6 +27,8 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  managedClasses   Classe[] @relation("TeacherClasses")
+  enrolledClasses  Classe[] @relation("StudentClasses")
 
   @@unique([email])
   @@map("user")
@@ -79,4 +81,18 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Classe {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  image       String?  // URL de l'image de couverture
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  teacher     User     @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   String
+  students    User[]   @relation("StudentClasses")
+
+  @@index([teacherId])
 }

@@ -5,7 +5,6 @@ import { Resend } from "resend";
 import { admin } from "better-auth/plugins";
 import ForgotPasswordEmail from "./emails/reset-password";
 import VerifyEmail from "./emails/verfify-email";
-
 export const resend = new Resend(process.env.RESEND_API_KEY);
 export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 
@@ -13,11 +12,15 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
+  },
   emailVerification: {
     autoSignInAfterVerification: true,
     sendOnSignUp: true,
-    expiresIn: 60,
+    expiresIn: 600,
     sendOnSignIn: true,
     sendVerificationEmail: async ({ user, url }) => {
       resend.emails.send({

@@ -10,12 +10,20 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MailCheck } from "lucide-react";
+import { authClient } from "@/src/lib/auth-client";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const userEmail = searchParams.get("email");
 
-  const handleResend = async () => {};
+  const handleResend = async () => {
+    if (!userEmail) return; // Sécurité si l'email est absent de l'URL
+
+    await authClient.sendVerificationEmail({
+      email: userEmail,
+      callbackURL: "/", // Où rediriger après la validation
+    });
+  };
 
   return (
     <div className="bg-white flex min-h-screen items-center justify-center px-4">
@@ -38,7 +46,11 @@ export default function VerifyEmailPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <Button onClick={handleResend} variant="outline" className="w-full">
+          <Button
+            onClick={handleResend}
+            variant="outline"
+            className="w-full cursor-pointer"
+          >
             Renvoyer l’email de vérification
           </Button>
         </CardContent>
