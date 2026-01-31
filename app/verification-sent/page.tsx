@@ -11,19 +11,67 @@ import {
 import { Button } from "@/components/ui/button";
 import { MailCheck } from "lucide-react";
 import { authClient } from "@/src/lib/auth-client";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const userEmail = searchParams.get("email");
+  const [countDown, setCountDown] = useState(0);
+
+  // 1. Au chargement, on vérifie s'il y a un cooldown en cours dans le localStorage
+  useEffect(() => {
+    const savedEndTime = localStorage.getItem("emailCooldownEnd");
+    if (savedEndTime) {
+      const remaining = Math.floor(
+        (parseInt(savedEndTime) - Date.now()) / 1000,
+      );
+      if (remaining > 0) {
+        setCountDown(remaining);
+      } else {
+        localStorage.removeItem("emailCooldownEnd");
+      }
+    }
+  }, []);
+
+  // 2. Le moteur du compte à rebours
+  useEffect(() => {
+    if (countDown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountDown((prev) => {
+        if (prev <= 1) {
+          localStorage.removeItem("emailCooldownEnd");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countDown]);
 
   const handleResend = async () => {
-    if (!userEmail) return; // Sécurité si l'email est absent de l'URL
+    if (!userEmail || countDown > 0) return;
 
-    await authClient.sendVerificationEmail({
-      email: userEmail,
-      callbackURL: "/", // Où rediriger après la validation
-    });
+    try {
+      await authClient.sendVerificationEmail({
+        email: userEmail,
+        callbackURL: "/",
+      });
+
+      toast.success("Email de vérification envoyé");
+
+      // 3. On enregistre le moment précis où le cooldown se termine (Maintenant + 5 min)
+      const endTime = Date.now() + 600000; // 300,000ms = 5 minutes
+      localStorage.setItem("emailCooldownEnd", endTime.toString());
+      setCountDown(600);
+    } catch (error) {
+      toast.error("Erreur lors de l'envoi");
+    }
   };
+
+  // ... le reste de votre code JSX reste identique
 
   return (
     <div className="bg-white flex min-h-screen items-center justify-center px-4">
@@ -45,11 +93,18 @@ export default function VerifyEmailPage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex flex-col">
+          <span className="text-s text-red-400">
+            {countDown > 0
+              ? `Avant de renvoyer un Email veuillez patienter : ${countDown}sec`
+              : ""}
+          </span>
+
           <Button
             onClick={handleResend}
             variant="outline"
-            className="w-full cursor-pointer"
+            className={countDown > 0 ? "bg-gray-400 " : "bg-background "}
+            disabled={countDown > 0 ? true : false}
           >
             Renvoyer l’email de vérification
           </Button>
