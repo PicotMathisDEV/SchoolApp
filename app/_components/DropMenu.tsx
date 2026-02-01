@@ -72,7 +72,7 @@ const DropMenu = ({ user }: Props) => {
           {user.role === "teacher" && <DropdownMenuSeparator />}
           {user?.role === "teacher" && (
             <DropdownMenuItem className="cursor-pointer" onClick={gestion}>
-              <ShieldUser /> Gestion Eleves & Classes
+              <ShieldUser /> Gestion des classes
             </DropdownMenuItem>
           )}
           {user.role === "admin" && <DropdownMenuSeparator />}

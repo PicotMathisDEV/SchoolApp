@@ -17,5 +17,8 @@ export async function getClasses() {
     where: {
       teacherId: session.user.id,
     },
+    include: {
+      students: true,
+    },
   });
 }

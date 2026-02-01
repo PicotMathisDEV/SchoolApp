@@ -18,10 +18,12 @@ import { unauthorized, useRouter } from "next/navigation";
 import { useSession } from "@/src/lib/auth-client";
 import { getClasses } from "@/src/lib/actions/get-classes";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Classe {
   id: string;
   name: string;
+  students?: [];
 }
 
 export default function Page() {
@@ -48,6 +50,14 @@ export default function Page() {
     }
   }, [session, isPending, router]);
 
+  const buttonClick = () => {
+    if (showCard === true) {
+      setShowCard(false);
+    } else {
+      setShowCard(true);
+    }
+  };
+
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -62,7 +72,6 @@ export default function Page() {
   if (session?.user.role != "teacher") {
     return unauthorized();
   }
-  console.log(classes);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +100,10 @@ export default function Page() {
         }}
       />
 
-      <Button onClick={() => setShowCard(true)} className="mt-4">
+      <Button
+        onClick={() => buttonClick()}
+        className="mt-4 bg-blue-600 hover:bg-blue-700 cursor-pointer w-64 h-16"
+      >
         Créer une classe
       </Button>
 
@@ -111,7 +123,11 @@ export default function Page() {
                     required
                   />
                 </div>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-blue-600"
+                >
                   {isSubmitting ? "Création..." : "Confirmer"}
                 </Button>
               </div>
@@ -119,7 +135,7 @@ export default function Page() {
           </CardContent>
         </Card>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
         {classes.map((item) => (
           <Card
             key={item.id}
@@ -143,15 +159,15 @@ export default function Page() {
                   </CardTitle>
                   <CardDescription className="flex items-center text-sm font-medium text-muted-foreground">
                     <span className="mr-2 h-2 w-2 rounded-full bg-green-500" />
-                    31 élèves
+                    {`${item.students?.length} eleves`}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="px-4 pb-4">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer">
-                Gérer la classe
+              <Button className="bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer text-white p-3 rounded-xl text-sm ">
+                <Link href={`/gestion/${item.id}`}>Gérer la classe</Link>
               </Button>
             </CardContent>
           </Card>
