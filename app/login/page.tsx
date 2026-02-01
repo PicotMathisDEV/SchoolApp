@@ -105,7 +105,7 @@ export default function LoginPage() {
               className="w-full cursor-pointer"
               disabled={loading}
             >
-              {loading ? "Connexion..." : "Se connecter"}{" "}
+              {loading ? "Connexion..." : "Se connecter"}
             </Button>
           </form>
         </CardContent>
@@ -114,12 +114,12 @@ export default function LoginPage() {
             Mot de passe oublié ?
           </Link>
           <div>
-            Pas de compte ?{" "}
+            Pas de compte ?
             <Link
               href="/signup"
               className="text-primary hover:underline font-semibold"
             >
-              Creer un compte{" "}
+              Creer un compte
             </Link>
           </div>
         </div>

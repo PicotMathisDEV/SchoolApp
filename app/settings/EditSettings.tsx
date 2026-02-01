@@ -45,7 +45,6 @@ const EditSettings = ({ user }: Props) => {
     }
   };
 
-  // Fonction pour changer le mot de passe
   const handleChangePassword = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword) {
@@ -70,7 +69,6 @@ const EditSettings = ({ user }: Props) => {
     setIsChangingPassword(false);
   };
 
-  // Fonction pour supprimer le compte
   const confirmDelete = async () => {
     if (!deletePassword) {
       toast.error("Le mot de passe est requis");
@@ -112,7 +110,6 @@ const EditSettings = ({ user }: Props) => {
         </p>
       </div>
 
-      {/* MODAL DE SUPPRESSION */}
       {showDeleteCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
           <Card className="w-full max-w-md shadow-lg border-destructive/20 animate-in fade-in zoom-in duration-200">
@@ -158,7 +155,6 @@ const EditSettings = ({ user }: Props) => {
         </div>
       )}
 
-      {/* FORMULAIRE PRINCIPAL (Infos Profil) */}
       <form action={action} className="space-y-12">
         <section className="space-y-6">
           <div className="flex items-center gap-6">
@@ -218,7 +214,6 @@ const EditSettings = ({ user }: Props) => {
         </section>
       </form>
 
-      {/* SECTION SÉCURITÉ (Mot de passe) */}
       <section className="mt-12 pt-12 border-t border-muted/40 space-y-6">
         <div>
           <h2 className="text-lg font-semibold">Sécurité</h2>
@@ -259,7 +254,6 @@ const EditSettings = ({ user }: Props) => {
         </div>
       </section>
 
-      {/* SECTION ZONE DE DANGER */}
       <section className="mt-12 pt-12 border-t border-destructive/20">
         <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-destructive">Attention</h2>

@@ -17,24 +17,25 @@ import { useEffect, useState } from "react";
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const userEmail = searchParams.get("email");
-  const [countDown, setCountDown] = useState(0);
-
-  // 1. Au chargement, on vérifie s'il y a un cooldown en cours dans le localStorage
-  useEffect(() => {
-    const savedEndTime = localStorage.getItem("emailCooldownEnd");
-    if (savedEndTime) {
-      const remaining = Math.floor(
-        (parseInt(savedEndTime) - Date.now()) / 1000,
-      );
-      if (remaining > 0) {
-        setCountDown(remaining);
-      } else {
-        localStorage.removeItem("emailCooldownEnd");
+  const [countDown, setCountDown] = useState(() => {
+    try {
+      const savedEndTime = localStorage.getItem("emailCooldownEnd");
+      if (savedEndTime) {
+        const remaining = Math.floor(
+          (parseInt(savedEndTime) - Date.now()) / 1000,
+        );
+        if (remaining > 0) {
+          return remaining;
+        } else {
+          localStorage.removeItem("emailCooldownEnd");
+        }
       }
+    } catch (err) {
+      console.log(err);
     }
-  }, []);
+    return 0;
+  });
 
-  // 2. Le moteur du compte à rebours
   useEffect(() => {
     if (countDown <= 0) return;
 
@@ -62,16 +63,14 @@ export default function VerifyEmailPage() {
 
       toast.success("Email de vérification envoyé");
 
-      // 3. On enregistre le moment précis où le cooldown se termine (Maintenant + 5 min)
       const endTime = Date.now() + 600000; // 300,000ms = 5 minutes
       localStorage.setItem("emailCooldownEnd", endTime.toString());
       setCountDown(600);
     } catch (error) {
       toast.error("Erreur lors de l'envoi");
+      console.log(error);
     }
   };
-
-  // ... le reste de votre code JSX reste identique
 
   return (
     <div className="bg-white flex min-h-screen items-center justify-center px-4">

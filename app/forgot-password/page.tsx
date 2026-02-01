@@ -46,25 +46,18 @@ export default function ForgotPasswordPage() {
   };
   return (
     <div className=" bg-white flex min-h-screen items-center justify-center">
-      {" "}
       <Toaster />
       <Card className="flex w-full max-w-md justify-center ">
-        {" "}
         <CardHeader className="flex flex-col items-center text-center">
-          {" "}
-          <CardTitle>Mot de passe oublié</CardTitle>{" "}
+          <CardTitle>Mot de passe oublié</CardTitle>
           <CardDescription>
-            {" "}
-            Entrez votre mail pour changer votre mot de passe{" "}
-          </CardDescription>{" "}
-        </CardHeader>{" "}
+            Entrez votre mail pour changer votre mot de passe
+          </CardDescription>
+        </CardHeader>
         <CardContent>
-          {" "}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {" "}
             <div className="space-y-2">
-              {" "}
-              <Label htmlFor="email">Email</Label>{" "}
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -81,39 +74,34 @@ export default function ForgotPasswordPage() {
                   }
                 }}
                 required
-              />{" "}
-            </div>{" "}
+              />
+            </div>
             {err && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {" "}
-                {err}{" "}
+                {err}
               </div>
-            )}{" "}
+            )}
             <Button
               type="submit"
               className="w-full cursor-pointer"
               disabled={loading}
             >
-              {" "}
-              {loading ? "Envoie du mail..." : "Envoyer un e-mail"}{" "}
-            </Button>{" "}
-          </form>{" "}
-        </CardContent>{" "}
+              {loading ? "Envoie du mail..." : "Envoyer un e-mail"}
+            </Button>
+          </form>
+        </CardContent>
         <div className="mt-4 space-y-2 text-center text-sm ">
-          {" "}
           <div>
-            {" "}
-            Vous avez deja un compte ?{" "}
+            Vous avez deja un compte ?
             <Link
               href="/login"
               className="text-primary hover:underline font-semibold"
             >
-              {" "}
-              Se connecter{" "}
-            </Link>{" "}
-          </div>{" "}
-        </div>{" "}
-      </Card>{" "}
+              Se connecter
+            </Link>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

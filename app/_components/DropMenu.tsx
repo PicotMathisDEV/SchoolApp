@@ -69,8 +69,8 @@ const DropMenu = ({ user }: Props) => {
             <LayoutDashboard /> Dashboard
           </DropdownMenuItem>
 
-          {user.role === "admin" && <DropdownMenuSeparator />}
-          {user?.role === "admin" && (
+          {user.role === "teacher" && <DropdownMenuSeparator />}
+          {user?.role === "teacher" && (
             <DropdownMenuItem className="cursor-pointer" onClick={gestion}>
               <ShieldUser /> Gestion Eleves & Classes
             </DropdownMenuItem>

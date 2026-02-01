@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignoutPrompt } from "@/src/components/signout-prompt";
 import { useSession } from "@/src/lib/auth-client";
-import EditSettings from "../_components/EditSettings";
+import EditSettings from "./EditSettings";
 import DropMenu from "../_components/DropMenu";
 
 export default function SettingsPage() {
