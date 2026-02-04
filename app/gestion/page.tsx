@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import DropMenu from "../_components/DropMenu";
@@ -14,12 +15,26 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { createClassAction } from "@/src/lib/actions/action";
 import { toast } from "sonner";
-import { unauthorized, useRouter } from "next/navigation";
+import { unauthorized } from "next/navigation";
 import { useSession } from "@/src/lib/auth-client";
 import { getClasses } from "@/src/lib/actions/get-classes";
 import Image from "next/image";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from "@/components/ui/alert-dialog";
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus } from "lucide-react";
 interface Classe {
   id: string;
   name: string;
@@ -50,14 +65,6 @@ export default function Page() {
     }
   }, [session, isPending, router]);
 
-  const buttonClick = () => {
-    if (showCard === true) {
-      setShowCard(false);
-    } else {
-      setShowCard(true);
-    }
-  };
-
   if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -66,9 +73,6 @@ export default function Page() {
     );
   }
 
-  if (!session?.user) {
-    return null;
-  }
   if (session?.user.role != "teacher") {
     return unauthorized();
   }
@@ -78,12 +82,12 @@ export default function Page() {
     setIsSubmitting(true);
     try {
       await createClassAction(nameValue, session.user.id, session.user.name);
+      window.location.reload();
       setShowCard(false);
       setnameValue("");
       toast.success("Classe créée !");
     } catch (error) {
-      toast.error("Erreur lors de la création");
-      console.error(error);
+      console.log(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,42 +103,55 @@ export default function Page() {
           role: session?.user?.role,
         }}
       />
-
-      <Button
-        onClick={() => buttonClick()}
-        className="mt-4 bg-blue-600 hover:bg-blue-700 cursor-pointer w-64 h-16"
-      >
-        Créer une classe
-      </Button>
-
-      {showCard && (
-        <Card className="max-w-xl mt-4">
-          <CardContent className="p-4">
-            <CardTitle className="mb-4">Créer une classe</CardTitle>
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="className">Nom de la classe</Label>
+      <div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-md transition-all active:scale-95 gap-2">
+              <Plus className="w-4 h-4" /> Créer une classe
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl">
+                Créer une nouvelle classe
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Cette action va créer une nouvelle classe
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <form className="grid gap-6" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-slate-700">
+                    Nom de la classe
+                  </Label>
                   <Input
-                    id="className"
-                    value={nameValue}
-                    onChange={(e) => setnameValue(e.target.value)}
+                    id="name"
                     placeholder="ex: T01"
+                    className="focus-visible:ring-blue-500"
+                    onChange={(e) => setnameValue(e.target.value)}
                     required
                   />
                 </div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-blue-600"
-                >
-                  {isSubmitting ? "Création..." : "Confirmer"}
-                </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
+            <AlertDialogFooter>
+              <AlertDialogCancel className="hover:cursor-pointer">
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+                className="bg-blue-600! hover:bg-blue-700! hover:cursor-pointer"
+              >
+                {isSubmitting
+                  ? "Création en cours..."
+                  : "Confirmer la création"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
         {classes.map((item) => (
           <Card

@@ -1,12 +1,7 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,11 +14,22 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   createStudentAndAssignToClass,
+  ModifyClassName,
+  RemoveClass,
   RemoveStudentFromClass,
 } from "@/src/lib/actions/action";
+
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getOneClass } from "@/src/lib/actions/action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +37,7 @@ import { toast } from "sonner";
 import { useSession } from "@/src/lib/auth-client";
 import DropMenu from "@/app/_components/DropMenu";
 import Image from "next/image";
+import { Pencil, Trash2Icon, Settings2, Plus } from "lucide-react";
 
 interface Classe {
   id: string;
@@ -44,13 +51,18 @@ interface Classe {
 }
 
 export default function Page() {
-  const [showCard, setShowCard] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentClass, setCurrentClass] = useState<Classe | null>(null);
+  const [newName, setNewName] = useState("");
+
+  // États pour contrôler les modales déclenchées par le Dropdown
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const params = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchOneClass = async () => {
@@ -59,22 +71,14 @@ export default function Page() {
         setCurrentClass(data);
       }
     };
+
     fetchOneClass();
   }, [params.id]);
 
   const { data: session } = useSession();
-
   if (!session) {
     return null;
   }
-
-  const buttonClick = () => {
-    if (showCard === true) {
-      setShowCard(false);
-    } else {
-      setShowCard(true);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +91,7 @@ export default function Page() {
         "user",
         params.id as string,
       );
-      setShowCard(false);
+      router.refresh();
       setIsSubmitting(false);
       toast.success(`Eleve ajouté a la classe${currentClass?.name}`);
     } catch (err) {
@@ -100,7 +104,6 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-12">
-      {/* Barre de navigation / Header */}
       <div className="border-b bg-white shadow-sm mb-8">
         <div className="max-w-7-xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -111,7 +114,6 @@ export default function Page() {
               Classe {currentClass?.name}
             </h1>
           </div>
-
           <DropMenu
             user={{
               name: session.user.name,
@@ -122,9 +124,7 @@ export default function Page() {
           />
         </div>
       </div>
-
       <main className="max-w-7xl mx-auto px-6 space-y-8">
-        {/* Section Actions & Stats */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <p className="text-slate-500 text-sm">
@@ -135,25 +135,23 @@ export default function Page() {
             </p>
           </div>
 
-          <Button
-            onClick={buttonClick}
-            className="bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-md transition-all active:scale-95 gap-2"
-          >
-            <span className="text-lg">+</span> Ajouter un élève
-          </Button>
-        </div>
-
-        {/* Formulaire dans une carte élégante */}
-        {showCard && (
-          <div className="max-w-2xl mx-auto animate-in fade-in zoom-in duration-300">
-            <Card className="border-2 border-blue-100 shadow-xl">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-xl">Nouvel Étudiant</CardTitle>
-                <CardDescription>
-                  Créez un compte élève pour la classe {currentClass?.name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          <div className="flex items-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 cursor-pointer shadow-md transition-all active:scale-95 gap-2">
+                  <Plus className="w-4 h-4" /> Ajouter un élève a la classe
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-xl">
+                    Ajouter un eleve ?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Cette action va ajouter un eleve a la classe{" "}
+                    <strong>{currentClass?.name}</strong>.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
                 <form className="grid gap-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -182,22 +180,149 @@ export default function Page() {
                       />
                     </div>
                   </div>
-                  <Button
-                    type="submit"
+                </form>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="hover:cursor-pointer">
+                    Annuler
+                  </AlertDialogCancel>
+                  <AlertDialogAction
                     disabled={isSubmitting}
-                    className="w-full bg-blue-600 h-11 cursor-pointer hover:bg-blue-700"
+                    onClick={handleSubmit}
+                    className="bg-blue-600! hover:bg-blue-700! hover:cursor-pointer"
                   >
                     {isSubmitting
                       ? "Création en cours..."
                       : "Confirmer l'inscription"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
-        {/* Grille des élèves améliorée */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="gap-2 border-slate-200 cursor-pointer"
+                >
+                  <Settings2 className="w-4 h-4" /> Actions
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Paramètres classe</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => setIsEditModalOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Modifier le nom
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setIsDeleteModalOpen(true)}
+                  className="text-red-600 focus:text-red-600 cursor-pointer"
+                >
+                  <Trash2Icon className="mr-2 h-4 w-4" /> Supprimer la classe
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        <AlertDialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl">
+                Modifier le nom de la classe ?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Cette action va modifier le nom de la classe la classe{" "}
+                <strong>{currentClass?.name}</strong>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <form className="grid gap-6">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name" className="text-slate-700">
+                    Nouveau nom de la classe
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    placeholder="ex: T01"
+                    className="focus-visible:ring-blue-500"
+                    onChange={(e) => setNewName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </form>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="hover:cursor-pointer">
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  try {
+                    if (currentClass?.id) {
+                      await ModifyClassName(currentClass.id, newName);
+                    }
+                    toast.success(
+                      `Le nom classe de ${currentClass?.name}a été modifié avec succès.`,
+                    );
+                    router.refresh();
+                  } catch (error) {
+                    toast.error("Erreur lors de la modification.");
+                    console.log(error);
+                  }
+                }}
+                className="bg-blue-600! hover:bg-blue-700! hover:cursor-pointer"
+              >
+                Confirmer la modification
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={isDeleteModalOpen}
+          onOpenChange={setIsDeleteModalOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl">
+                Supprimer la classe ?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Cette action va supprimer la classe{" "}
+                <strong>{currentClass?.name}</strong>. Les élèves ne pourront
+                plus accéder au contenu de cette classe.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="hover:cursor-pointer">
+                Annuler
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  try {
+                    if (currentClass?.id) {
+                      await RemoveClass(currentClass.id);
+                    }
+                    toast.success(
+                      `La classe de ${currentClass?.name}a été suprimé avec succès.`,
+                    );
+                    router.push("/gestion");
+                  } catch (error) {
+                    toast.error("Erreur lors de la suppression.");
+                    console.log(error);
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 cursor-pointer"
+              >
+                Confirmer la suppression
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentClass?.students.map((student) => (
             <Card
@@ -215,7 +340,6 @@ export default function Page() {
                       fill
                     />
                   </div>
-
                   <div className="space-y-1 text-center">
                     <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                       {student.name}
@@ -224,7 +348,6 @@ export default function Page() {
                       {student.email}
                     </p>
                   </div>
-
                   <div className="flex gap-2 w-full pt-2">
                     <Button
                       variant="outline"
@@ -238,7 +361,7 @@ export default function Page() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className=" hover:text-red-600 transition-colors text-red-600 "
+                          className=" hover:text-red-600 transition-colors text-red-600 cursor-pointer"
                         >
                           Supprimer
                         </Button>
@@ -257,9 +380,11 @@ export default function Page() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogCancel className="cursor-pointer">
+                            Annuler
+                          </AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-red-600 hover:bg-red-700 cursor-pointer"
                             onClick={async () => {
                               try {
                                 await RemoveStudentFromClass(
@@ -269,7 +394,6 @@ export default function Page() {
                                 toast.success(
                                   `${student.name} a été retiré de la classe avec succès.`,
                                 );
-                                // Optionnel : router.refresh() si tu veux recharger les données server-side
                               } catch (error) {
                                 toast.error("Erreur lors de la suppression.");
                                 console.log(error);
@@ -288,8 +412,7 @@ export default function Page() {
           ))}
         </div>
 
-        {/* État vide */}
-        {currentClass?.students.length === 0 && !showCard && (
+        {currentClass?.students.length === 0 && (
           <div className="text-center py-20 border-2 border-dashed rounded-2xl bg-white/50">
             <div className="text-4xl mb-4">📚</div>
             <p className="text-slate-500 font-medium">

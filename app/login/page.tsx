@@ -10,6 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/src/lib/auth-client";
+import { check } from "better-auth";
+import { Check, CheckCircle2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -45,6 +47,7 @@ export default function LoginPage() {
         );
       } else {
         router.push("/dashboard");
+        toast.success(`Connecté`);
       }
     } catch (error) {
       setError("Une erreur s'est produite lors de la cconnexion au compte");
@@ -119,6 +122,7 @@ export default function LoginPage() {
               href="/signup"
               className="text-primary hover:underline font-semibold"
             >
+              {" "}
               Creer un compte
             </Link>
           </div>

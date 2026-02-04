@@ -4,6 +4,7 @@ import { signOut } from "../lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface SignoutPromptProps {
   onCancel: () => void;
@@ -14,7 +15,8 @@ export function SignoutPrompt({ onCancel }: SignoutPromptProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/");
+    router.push("/dashboard");
+    toast.success("Déconnecté");
   };
 
   return (

@@ -1,8 +1,9 @@
 "use server";
 
 import prisma from "@/src/lib/prisma";
-import { revalidatePath } from "next/cache";
+
 import { auth } from "../auth";
+import { revalidatePath } from "next/cache";
 
 export async function createClassAction(
   name: string,
@@ -18,8 +19,6 @@ export async function createClassAction(
       teacherName: teacherName,
     },
   });
-
-  revalidatePath("/gestion");
 }
 
 export async function createStudentAndAssignToClass(
@@ -49,7 +48,7 @@ export async function createStudentAndAssignToClass(
       },
     });
   }
-
+  revalidatePath("/gestion");
   return newStudent;
 }
 
@@ -72,6 +71,21 @@ export async function RemoveStudentFromClass(
       students: {
         disconnect: { id: studentId },
       },
+    },
+  });
+}
+
+export async function RemoveClass(classeId: string) {
+  return await prisma.classe.delete({
+    where: { id: classeId },
+  });
+}
+
+export async function ModifyClassName(classeId: string, newName: string) {
+  await prisma.classe.update({
+    where: { id: classeId },
+    data: {
+      name: newName,
     },
   });
 }
