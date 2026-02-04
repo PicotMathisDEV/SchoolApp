@@ -3,6 +3,16 @@
 import { Button } from "@/components/ui/button";
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -10,19 +20,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignoutPrompt } from "@/src/components/signout-prompt";
+
+import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
+
 import {
   Bookmark,
+  GraduationCapIcon,
+  HelpCircle,
   LayoutDashboard,
   LogOut,
-  Presentation,
+  Puzzle,
   Settings,
   ShieldUser,
-  Star,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { toast } from "sonner";
+import { signOut } from "@/src/lib/auth-client";
 
 type Props = {
   user: {
@@ -34,12 +48,17 @@ type Props = {
 };
 
 const DropMenu = ({ user }: Props) => {
-  const [showPrompt, setShowPrompt] = useState(false);
   const router = useRouter();
 
   const settings = () => router.push("/settings");
   const dashboard = () => router.push("/dashboard");
   const gestion = () => router.push("/gestion");
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/dashboard");
+    toast.success("Déconnecté");
+  };
 
   return (
     <div>
@@ -62,10 +81,7 @@ const DropMenu = ({ user }: Props) => {
             Mon Compte
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="cursor-pointer bg-gray-200"
-            onClick={dashboard}
-          >
+          <DropdownMenuItem className="cursor-pointer " onClick={dashboard}>
             <LayoutDashboard /> Dashboard
           </DropdownMenuItem>
 
@@ -75,49 +91,86 @@ const DropMenu = ({ user }: Props) => {
               <ShieldUser /> Gestion des classes
             </DropdownMenuItem>
           )}
-          {user.role === "admin" && <DropdownMenuSeparator />}
-          {user?.role === "admin" && (
-            <DropdownMenuItem className="cursor-pointer">
-              <Presentation /> Creer un parcours
-            </DropdownMenuItem>
+
+          {user?.role === "teacher" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="flex items-center gap-2">
+                  <Puzzle className="h-4 w-4 font-normal text-gray-600" />
+                  <span className="font-normal">Créer un module</span>
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  className="cursor-pointer ml-2"
+                  onClick={() => router.push("/create/parcours")}
+                >
+                  <GraduationCapIcon className="mr-2 h-4 w-4" />
+                  <span>Parcours</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer ml-2"
+                  onClick={() => router.push("/create/lesson")}
+                >
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  <span>Lesson</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer ml-2"
+                  onClick={() => router.push("/create/quizz")}
+                >
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <span>Quizz</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </>
           )}
-          {user?.role === "admin" && (
-            <DropdownMenuItem className="cursor-pointer">
-              <Bookmark /> Creer une lesson
-            </DropdownMenuItem>
-          )}
-          {user?.role === "admin" && (
-            <DropdownMenuItem className="cursor-pointer">
-              <Star /> Creer un quizz
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer">
-            <Presentation /> Parcours
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer">
-            <Bookmark /> Lessons
-          </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
-            <Star /> Quizz
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer" onClick={settings}>
             <Settings /> Paramètres
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-red-500 font-semibold flex items-center gap-2 cursor-pointer"
-            onClick={() => setShowPrompt(true)}
-          >
-            <LogOut className="text-red-500" />
-            Se déconnecter
-          </DropdownMenuItem>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem
+                className="text-red-500 font-semibold flex items-center gap-2 cursor-pointer"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Se déconnecter</span>
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+
+            {/* On enlève les paddings par défaut de Content si nécessaire ou on stylise l'intérieur */}
+            <AlertDialogContent className="p-0 overflow-hidden border-none max-w-md">
+              <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertDialogTitle className="text-lg font-semibold text-destructive">
+                    Attention
+                  </AlertDialogTitle>
+                </div>
+                <AlertDialogDescription className="text-sm text-muted-foreground mb-6">
+                  Vous êtes sur le point de vous déconnecter. Vous devrez saisir
+                  à nouveau vos identifiants pour accéder à votre espace.
+                </AlertDialogDescription>
+
+                <div className="flex justify-end gap-3">
+                  <AlertDialogCancel className="mt-0 border-destructive/20 hover:bg-destructive/10 hover:text-destructive cursor-pointer">
+                    Annuler
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleSignOut}
+                    className="bg-red-500! text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                  >
+                    Se déconnecter
+                  </AlertDialogAction>
+                </div>
+              </div>
+            </AlertDialogContent>
+          </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {showPrompt && <SignoutPrompt onCancel={() => setShowPrompt(false)} />}
     </div>
   );
 };

@@ -35,7 +35,7 @@ export function SignoutPrompt({ onCancel }: SignoutPromptProps) {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 border-gray-500 text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer"
+            className="flex-1 border-red-500 text-red-500 hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
             onClick={onCancel}
           >
             Annuler

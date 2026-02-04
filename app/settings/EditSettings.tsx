@@ -10,13 +10,16 @@ import { updateUserData } from "@/src/lib/actions/update-user";
 import Image from "next/image";
 import { authClient } from "@/src/lib/auth-client";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Props = {
   user: {
@@ -30,7 +33,6 @@ const EditSettings = ({ user }: Props) => {
   const router = useRouter();
   const [state, action, isPending] = useActionState(updateUserData, null);
 
-  const [showDeleteCard, setShowDeleteCard] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -69,8 +71,10 @@ const EditSettings = ({ user }: Props) => {
     setIsChangingPassword(false);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = async (e: React.MouseEvent) => {
+    // Empêche la fermeture de l'alert dialog si le mot de passe est vide
     if (!deletePassword) {
+      e.preventDefault();
       toast.error("Le mot de passe est requis");
       return;
     }
@@ -109,51 +113,6 @@ const EditSettings = ({ user }: Props) => {
           Gérez vos informations personnelles et votre sécurité.
         </p>
       </div>
-
-      {showDeleteCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md shadow-lg border-destructive/20 animate-in fade-in zoom-in duration-200">
-            <CardHeader>
-              <CardTitle className="text-destructive">
-                Supprimer le compte
-              </CardTitle>
-              <CardDescription>
-                Cette action est irréversible. Veuillez saisir votre mot de
-                passe pour confirmer.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="delete-password">Mot de passe</Label>
-                <Input
-                  id="delete-password"
-                  type="password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoFocus
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteCard(false)}
-                disabled={isDeleting}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Suppression..." : "Confirmer la suppression"}
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      )}
 
       <form action={action} className="space-y-12">
         <section className="space-y-6">
@@ -207,7 +166,7 @@ const EditSettings = ({ user }: Props) => {
           <Button
             type="submit"
             disabled={isPending}
-            className="px-8 cursor-pointer"
+            className="px-8 cursor-pointer bg-blue-600 hover:bg-blue-700"
           >
             {isPending ? "Enregistrement..." : "Sauvegarder les informations"}
           </Button>
@@ -247,7 +206,7 @@ const EditSettings = ({ user }: Props) => {
             variant="default"
             onClick={handleChangePassword}
             disabled={isChangingPassword}
-            className="w-fit cursor-pointer"
+            className="w-fit cursor-pointer bg-blue-600 hover:bg-blue-700"
           >
             {isChangingPassword ? "Mise à jour..." : "Changer le mot de passe"}
           </Button>
@@ -261,14 +220,56 @@ const EditSettings = ({ user }: Props) => {
             La suppression de votre compte est définitive et effacera toutes vos
             données.
           </p>
-          <Button
-            type="button"
-            variant="destructive"
-            className="cursor-pointer"
-            onClick={() => setShowDeleteCard(true)}
-          >
-            Supprimer mon compte
-          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                className="cursor-pointer"
+              >
+                Supprimer mon compte
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-destructive">
+                  Supprimer le compte
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible. Veuillez saisir votre mot de
+                  passe pour confirmer la suppression définitive.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <div className="space-y-2">
+                <Label htmlFor="delete-password">Mot de passe</Label>
+                <Input
+                  id="delete-password"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  onClick={() => setDeletePassword("")}
+                  className="cursor-pointer"
+                >
+                  Annuler
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className="bg-destructive! text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                >
+                  {isDeleting ? "Suppression..." : "Confirmer la suppression"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </section>
     </div>

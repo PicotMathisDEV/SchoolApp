@@ -43,7 +43,6 @@ interface Classe {
 
 export default function Page() {
   const [classes, setClasses] = useState<Classe[]>([]);
-  const [showCard, setShowCard] = useState(false);
   const [nameValue, setnameValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,7 +82,6 @@ export default function Page() {
     try {
       await createClassAction(nameValue, session.user.id, session.user.name);
       window.location.reload();
-      setShowCard(false);
       setnameValue("");
       toast.success("Classe créée !");
     } catch (error) {
