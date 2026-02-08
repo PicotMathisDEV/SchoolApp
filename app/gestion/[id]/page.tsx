@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useSession } from "@/src/lib/auth-client";
 import DropMenu from "@/app/_components/DropMenu";
-import Image from "next/image";
+import Image from "next/Image";
 import { Pencil, Trash2Icon, Settings2, Plus } from "lucide-react";
 
 interface Classe {

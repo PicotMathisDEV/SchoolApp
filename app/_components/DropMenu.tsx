@@ -113,7 +113,7 @@ const DropMenu = ({ user }: Props) => {
                   onClick={() => router.push("/create/lesson")}
                 >
                   <Bookmark className="mr-2 h-4 w-4" />
-                  <span>Lesson</span>
+                  <span>Lessons</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem

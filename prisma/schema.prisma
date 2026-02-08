@@ -1,12 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  moduleFormat           = "cjs" // "esm" or `"cjs"` for CommonJS
+  runtime                = "nodejs"
+  generatedFileExtension = "ts"
+ 
+  
 }
 
 datasource db {
@@ -14,25 +13,59 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  role          String?   @default("student")
-  banned        Boolean?
-  banReason     String?
-  banExpires    DateTime?
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?   @default("/user.svg")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  managedClasses   Classe[] @relation("TeacherClasses")
-  enrolledClasses  Classe[] @relation("StudentClasses")
-  password String?
+  id             String    @id @default(cuid())
+  role           String?   @default("student")
+  banned         Boolean?
+  banReason      String?
+  banExpires     DateTime?
+  name           String
+  email          String    @unique
+  emailVerified  Boolean   @default(false)
+  image          String?   @default("/user.svg")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  sessions       Session[]
+  accounts       Account[]
+  password       String?
 
-  @@unique([email])
+
+  managedClasses  Classe[] @relation("TeacherClasses")
+  enrolledClasses Classe[] @relation("StudentClasses")
+
+ 
+  lessonsTaught   Lesson[] @relation("TeacherLessons")
+
   @@map("user")
+}
+
+model Classe {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  image       String?  @default("/class.png")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  teacher     User     @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacherName String
+  students    User[]   @relation("StudentClasses")
+  lessons     Lesson[]
+
+  @@index([teacherId])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  teacher     User     @relation("TeacherLessons", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacherName String   
+  classe      Classe?  @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  classeId    String?
+  image       String?  @default("/lesson.png")
+  @@index([classeId])
+  @@index([teacherId])
 }
 
 model Session {
@@ -84,17 +117,3 @@ model Verification {
   @@map("verification")
 }
 
-model Classe {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  image       String?  @default("/class.png")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  teacher     User     @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
-  teacherId   String
-  teacherName String
-  students    User[]   @relation("StudentClasses")
-
-  @@index([teacherId])
-}
